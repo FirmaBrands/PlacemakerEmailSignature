@@ -41,7 +41,9 @@ body {
   padding-right: max(16px, env(safe-area-inset-right, 0px));
   padding-block: 40px 56px;
 }
-.page { max-width: 960px; margin: 0 auto; display: grid; gap: 18px; }
+.page { max-width: 960px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; }
+/* the scaled signature must never decide the page width */
+.pin, .paper, .fields, .actions, .fallback { min-width: 0; }
 h1 { margin: 0; font-size: 28px; font-weight: 700; line-height: 1.15; }
 .hint { margin: 4px 0 0; color: var(--muted); font-size: 17px; }
 
@@ -70,7 +72,7 @@ fieldset { border: 0; margin: 0; padding: 0; min-width: 0; display: grid; gap: 1
 legend { padding: 0; margin-bottom: 10px; font-size: 13px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
 .pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 @media (max-width: 359px) { .pair { grid-template-columns: minmax(0, 1fr); } }
-.f { display: grid; gap: 5px; min-width: 0; }
+.f { display: grid; grid-template-columns: minmax(0, 1fr); gap: 5px; min-width: 0; }
 .f > span { font-size: 14px; font-weight: 600; color: var(--muted); }
 .f input { width: 100%; min-width: 0; font: inherit; font-size: 17px; color: var(--ink); background: var(--field-bg); border: 1px solid var(--field-line); border-radius: 10px; padding: 11px 12px; transition: border-color .15s, box-shadow .15s; }
 .f input.b { font-weight: 700; }
@@ -91,7 +93,7 @@ legend { padding: 0; margin-bottom: 10px; font-size: 13px; font-weight: 700; let
 .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .msg { margin: 0; color: var(--muted); }
 
-.fallback { margin: 0; display: grid; gap: 8px; justify-items: start; }
+.fallback { margin: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; justify-items: start; }
 .fallback img { background: #fff; border: 1px solid var(--line); max-width: 100%; height: auto; }
 .fallback figcaption { color: var(--muted); font-size: 15px; }
 </style>
@@ -217,7 +219,9 @@ function fitStage() {
   document.documentElement.style.scrollPaddingTop = pinned ? ($('pin').offsetHeight + 12) + 'px' : '';
 }
 fitStage();
-if (window.ResizeObserver) new ResizeObserver(fitStage).observe(paper); else addEventListener('resize', fitStage);
+if (window.ResizeObserver) new ResizeObserver(fitStage).observe(paper);
+addEventListener('resize', fitStage);
+addEventListener('orientationchange', () => setTimeout(fitStage, 250));
 
 /* ---------- editing: inline text and the fields below stay in sync ---------- */
 const inputs = Array.from(document.querySelectorAll('#fields input'));
