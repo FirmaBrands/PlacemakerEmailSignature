@@ -17,12 +17,15 @@
   --accent: #EC5C3A;
   --btn-bg: #6A5B37;
   --btn-fg: #FFFFFF;
+  --field-bg: #FFFFFF;
+  --field-line: #D3CEC3;
+  --ring: rgba(236, 92, 58, .22);
   --font: "Assistant", "Segoe UI", Arial, sans-serif;
 }
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) { --bg: #14120E; --ink: #F1EEE7; --muted: #A69F90; --line: #36312A; --btn-bg: #EC5C3A; --btn-fg: #1A1510; color-scheme: dark; }
+  :root:not([data-theme="light"]) { --bg: #14120E; --ink: #F1EEE7; --muted: #A69F90; --line: #36312A; --btn-bg: #EC5C3A; --btn-fg: #1A1510; --field-bg: #1E1B16; --field-line: #413B31; --ring: rgba(236, 92, 58, .35); color-scheme: dark; }
 }
-:root[data-theme="dark"] { --bg: #14120E; --ink: #F1EEE7; --muted: #A69F90; --line: #36312A; --btn-bg: #EC5C3A; --btn-fg: #1A1510; color-scheme: dark; }
+:root[data-theme="dark"] { --bg: #14120E; --ink: #F1EEE7; --muted: #A69F90; --line: #36312A; --btn-bg: #EC5C3A; --btn-fg: #1A1510; --field-bg: #1E1B16; --field-line: #413B31; --ring: rgba(236, 92, 58, .35); color-scheme: dark; }
 
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
@@ -42,8 +45,12 @@ body {
 h1 { margin: 0; font-size: 28px; font-weight: 700; line-height: 1.15; }
 .hint { margin: 4px 0 0; color: var(--muted); font-size: 17px; }
 
-.paper { background: var(--paper); border: 1px solid var(--line); border-radius: 14px; padding: 40px 32px; display: flex; justify-content: center; overflow: hidden; }
-@media (max-width: 560px) { .paper { padding: 28px 12px; } }
+.paper { background: var(--paper); border: 1px solid var(--line); border-radius: 14px; padding: 32px; display: flex; justify-content: center; overflow: hidden; }
+@media (max-width: 560px) { .paper { padding: 18px 12px; } }
+/* On narrow screens the signature stays pinned while you type in the fields below it. */
+@media (max-width: 780px) {
+  .pin { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 2; background: var(--bg); padding-block: 8px; margin-block: -8px; }
+}
 .fit { position: relative; flex: none; }
 .stage { position: absolute; top: 0; left: 0; transform-origin: 0 0; color: #000; }
 .stage img { position: absolute; inset: 0; width: 100%; height: 100%; display: block; max-width: none; }
@@ -54,6 +61,23 @@ h1 { margin: 0; font-size: 28px; font-weight: 700; line-height: 1.15; }
 .ed:hover { outline-color: rgba(236, 92, 58, .55); }
 .ed:focus { outline: 1px solid var(--accent); background: rgba(236, 92, 58, .07); }
 .ed:empty::before { content: attr(data-ph); color: #B5B0A6; font-weight: 400; }
+.ed.linked { outline: 1px solid var(--accent); background: rgba(236, 92, 58, .09); }
+
+/* Text fields */
+.fields { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 20px 28px; align-items: start; }
+@media (max-width: 780px) { .fields { grid-template-columns: minmax(0, 1fr); } }
+fieldset { border: 0; margin: 0; padding: 0; min-width: 0; display: grid; gap: 12px; }
+legend { padding: 0; margin-bottom: 10px; font-size: 13px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
+.pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 359px) { .pair { grid-template-columns: minmax(0, 1fr); } }
+.f { display: grid; gap: 5px; min-width: 0; }
+.f > span { font-size: 14px; font-weight: 600; color: var(--muted); }
+.f input { width: 100%; min-width: 0; font: inherit; font-size: 17px; color: var(--ink); background: var(--field-bg); border: 1px solid var(--field-line); border-radius: 10px; padding: 11px 12px; transition: border-color .15s, box-shadow .15s; }
+.f input.b { font-weight: 700; }
+.f input:hover { border-color: var(--muted); }
+.f input:focus, .f input.linked { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--ring); }
+.note { margin: 0; font-size: 14px; color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { .f input { transition: none; } }
 @media (hover: none) {
   .t-touch { display: inline; }
   .t-mouse { display: none; }
@@ -75,21 +99,44 @@ h1 { margin: 0; font-size: 28px; font-weight: 700; line-height: 1.15; }
 <main class="page">
   <header>
     <h1>Email signature</h1>
-    <p class="hint"><span class="t-mouse">Click</span><span class="t-touch">Tap</span> any text to change it.</p>
+    <p class="hint"><span class="t-mouse">Click</span><span class="t-touch">Tap</span> any text on the signature, or use the fields below.</p>
   </header>
 
-  <div class="paper" id="paper">
-    <div class="fit" id="fit">
-      <div class="stage" id="stage">
-        <img id="art" alt="">
-        <div class="row" id="r-phone"><span class="ed" data-k="phone" data-ph="Phone" dir="ltr"></span></div>
-        <div class="row" id="r-web"><span class="ed" data-k="web" data-ph="Website" dir="ltr"></span></div>
-        <div class="row" id="r-address"><span class="ed" data-k="address" data-ph="Address" dir="auto"></span></div>
-        <div class="row" id="r-name" dir="rtl"><span class="ed b" data-k="heName" data-ph="שם" dir="rtl"></span><span class="ed" data-k="enTitle" data-ph="Title" dir="ltr"></span></div>
-        <div class="row" id="r-title" dir="rtl"><span class="ed" data-k="enName" data-ph="Name" dir="ltr"></span><span class="ed b" data-k="heTitle" data-ph="תפקיד" dir="rtl"></span></div>
+  <div class="pin" id="pin">
+    <div class="paper" id="paper">
+      <div class="fit" id="fit">
+        <div class="stage" id="stage">
+          <img id="art" alt="">
+          <div class="row" id="r-phone"><span class="ed" data-k="phone" data-ph="Phone" dir="ltr" role="textbox" aria-label="Phone"></span></div>
+          <div class="row" id="r-web"><span class="ed" data-k="web" data-ph="Website" dir="ltr" role="textbox" aria-label="Website"></span></div>
+          <div class="row" id="r-address"><span class="ed" data-k="address" data-ph="Address" dir="auto" role="textbox" aria-label="Address"></span></div>
+          <div class="row" id="r-name" dir="rtl"><span class="ed b" data-k="heName" data-ph="שם" dir="rtl" role="textbox" aria-label="שם" lang="he"></span><span class="ed" data-k="enTitle" data-ph="Title" dir="ltr" role="textbox" aria-label="Title in English"></span></div>
+          <div class="row" id="r-title" dir="rtl"><span class="ed" data-k="enName" data-ph="Name" dir="ltr" role="textbox" aria-label="Name in English"></span><span class="ed b" data-k="heTitle" data-ph="תפקיד" dir="rtl" role="textbox" aria-label="תפקיד" lang="he"></span></div>
+        </div>
       </div>
     </div>
   </div>
+
+  <form class="fields" id="fields" autocomplete="off">
+    <fieldset>
+      <legend>Name and title</legend>
+      <div class="pair">
+        <label class="f"><span>Name in English</span><input type="text" data-k="enName" dir="ltr" autocapitalize="words" enterkeyhint="next"></label>
+        <label class="f" dir="rtl" lang="he"><span>שם</span><input type="text" data-k="heName" dir="rtl" class="b" enterkeyhint="next"></label>
+      </div>
+      <div class="pair">
+        <label class="f"><span>Title in English</span><input type="text" data-k="enTitle" dir="ltr" enterkeyhint="next"></label>
+        <label class="f" dir="rtl" lang="he"><span>תפקיד</span><input type="text" data-k="heTitle" dir="rtl" class="b" enterkeyhint="next"></label>
+      </div>
+      <p class="note">The English name is also used for the file name.</p>
+    </fieldset>
+    <fieldset>
+      <legend>Contact</legend>
+      <label class="f"><span>Phone</span><input type="tel" data-k="phone" dir="ltr" enterkeyhint="next"></label>
+      <label class="f"><span>Website</span><input type="text" data-k="web" dir="ltr" inputmode="url" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="next"></label>
+      <label class="f"><span>Address</span><input type="text" data-k="address" dir="auto" enterkeyhint="done"></label>
+    </fieldset>
+  </form>
 
   <div class="actions">
     <button id="download" class="btn" type="button">Download GIF</button>
@@ -165,13 +212,46 @@ function fitStage() {
   stage.style.transform = `scale(${zoom})`;
   fit.style.width = (W1 * zoom) + 'px';
   fit.style.height = (H1 * zoom) + 'px';
+  /* keep focused fields clear of the pinned signature on narrow screens */
+  const pinned = window.matchMedia && matchMedia('(max-width: 780px)').matches;
+  document.documentElement.style.scrollPaddingTop = pinned ? ($('pin').offsetHeight + 12) + 'px' : '';
 }
 fitStage();
 if (window.ResizeObserver) new ResizeObserver(fitStage).observe(paper); else addEventListener('resize', fitStage);
 
-/* ---------- inline editing ---------- */
+/* ---------- editing: inline text and the fields below stay in sync ---------- */
+const inputs = Array.from(document.querySelectorAll('#fields input'));
+const spanFor = {}, inputFor = {};
+eds.forEach((el) => { spanFor[el.dataset.k] = el; });
+inputs.forEach((inp) => { inputFor[inp.dataset.k] = inp; });
+
+function setText(k, value, from) {
+  value = value.replace(/[\r\n]+/g, ' ');
+  text[k] = value;
+  const span = spanFor[k], inp = inputFor[k];
+  if (from !== span) { span.textContent = value; if (value === '') span.innerHTML = ''; }
+  if (from !== inp && inp.value !== value) inp.value = value;
+  save();
+  $('msg').textContent = '';
+}
+
+inputs.forEach((inp, i) => {
+  inp.value = text[inp.dataset.k];
+  inp.addEventListener('input', () => setText(inp.dataset.k, inp.value, inp));
+  inp.addEventListener('focus', () => spanFor[inp.dataset.k].classList.add('linked'));
+  inp.addEventListener('blur', () => spanFor[inp.dataset.k].classList.remove('linked'));
+  inp.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter') return;
+    e.preventDefault();
+    if (inputs[i + 1]) inputs[i + 1].focus(); else inp.blur();
+  });
+});
+$('fields').addEventListener('submit', (e) => e.preventDefault());
+
 for (const el of eds) {
   el.textContent = text[el.dataset.k];
+  el.addEventListener('focus', () => inputFor[el.dataset.k].classList.add('linked'));
+  el.addEventListener('blur', () => inputFor[el.dataset.k].classList.remove('linked'));
   el.setAttribute('contenteditable', 'plaintext-only');
   if (el.contentEditable !== 'plaintext-only') el.setAttribute('contenteditable', 'true');
   el.spellcheck = false;
@@ -185,9 +265,7 @@ for (const el of eds) {
   el.addEventListener('input', () => {
     if (/\n/.test(el.textContent)) el.textContent = el.textContent.replace(/\n/g, ' ');
     if (el.textContent === '') el.innerHTML = '';
-    text[el.dataset.k] = el.textContent;
-    save();
-    $('msg').textContent = '';
+    setText(el.dataset.k, el.textContent, el);
   });
 }
 
